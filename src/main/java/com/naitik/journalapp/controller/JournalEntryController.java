@@ -28,7 +28,6 @@ public class JournalEntryController {
 
     @PostMapping
     public JournalEntityRequest createEntry(@Valid @RequestBody JournalEntityRequest myEntry){
-
         return journalEntryService.saveEntry(myEntry);
     }
 
@@ -46,7 +45,7 @@ public class JournalEntryController {
     }
 
    @PutMapping("id/{id}")
-    public JournalEntityRequest updateJournalEntryById(@PathVariable ObjectId id, @RequestBody JournalEntryEntity newEntry){
+    public JournalEntityRequest updateJournalEntryById(@PathVariable ObjectId id, @RequestBody JournalEntityRequest newEntry){
         JournalEntityRequest old = journalEntryService.findById(id).orElse(null);
         if(old != null){
             old.setTitle(newEntry.getTitle() != null && !newEntry.getTitle().isEmpty() ? newEntry.getTitle() : old.getTitle());
@@ -55,11 +54,13 @@ public class JournalEntryController {
         journalEntryService.saveEntry(old);
         return old;
     }
-  /*@GetMapping("/search/{title}")
-  public List<JournalEntry> getJournalByTitle(@PathVariable String title)   {
+  @GetMapping("/search/{title}")
+  public List<JournalEntityRequest> getJournalByTitle(@PathVariable String title)   {
       return journalEntryService.getEntriesByTitle(title);
   }
-    @GetMapping("/search")
+
+
+    /*@GetMapping("/search")
     public List<JournalEntry> getJournalByTitleAndContent(
             @RequestParam String title,
             @RequestParam String content) {
