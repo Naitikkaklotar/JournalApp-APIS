@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -90,20 +88,27 @@ public class JournalEntryService {
     }
 
     public List<JournalEntityRequest> getEntriesByTitle(String title) {
-        try {
-            log.info("Fetching journal entries by title: {}", title);
-            List<JournalEntryEntity> entries = journalEntryRepo.findByTitle(title);
-            List<JournalEntityRequest> requests = new ArrayList<>();
-            for (JournalEntryEntity entity : entries) {
-                requests.add(new JournalEntityRequest(entity));
-            }
-            log.info("Fetched {} journal entries with title: {}", entries.size(), title);
-            return requests;
-        } catch (Exception e) {
-            log.error("Error fetching journal entries by title: {}", e.getMessage(), e);
-            throw new RuntimeException("Error fetching journal entries by title: " + e.getMessage(), e);
+        log.info("Fetching journal entries by title: {}", title);
+
+        // Fetch entries from the database
+        List<JournalEntryEntity> entries = journalEntryRepo.findByTitle(title);
+
+        // If no entries found, log it as an info message and return an empty list
+        if (entries.isEmpty()) {
+            log.warn("No journal entries found with title: {}", title);
+            throw new NoSuchElementException("No journal entries found with title: " + title);
         }
+
+        // Convert JournalEntryEntity to JournalEntityRequest
+        List<JournalEntityRequest> requests = new ArrayList<>();
+        for (JournalEntryEntity entity : entries) {
+            requests.add(new JournalEntityRequest(entity));
+        }
+
+        /*log.info("Fetched {} journal entries with title: {}", entries.size(), title);*/
+        return requests;
     }
+
 
     public List<JournalEntityRequest> getEntriesByTitleAndContent(String title, String content) {
         try {
