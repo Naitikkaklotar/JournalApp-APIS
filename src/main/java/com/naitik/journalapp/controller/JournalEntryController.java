@@ -79,6 +79,8 @@ public class JournalEntryController {
           return journalEntryService.getAll();
       }
   }*/
+
+    //Naitik kaklotar
 }
 
 
