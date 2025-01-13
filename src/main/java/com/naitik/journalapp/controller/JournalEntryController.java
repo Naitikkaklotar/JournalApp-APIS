@@ -81,6 +81,7 @@ public class JournalEntryController {
   }*/
 
     //Naitik kaklotar
+    //2222222222222222222222
 }
 
 
