@@ -35,7 +35,7 @@ public class JournalEntryEntity {
           this.id=journalEntityRequest.getId();
           this.title=journalEntityRequest.getTitle();
           this.content=journalEntityRequest.getContent();
-          this.writer=journalEntityRequest.getTitle();
+          this.writer=journalEntityRequest.getWriter();
           this.date=journalEntityRequest.getDate();
   }
 
