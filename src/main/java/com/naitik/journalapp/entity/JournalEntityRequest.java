@@ -29,7 +29,7 @@ public class JournalEntityRequest {
     private LocalDateTime date;
 
     public JournalEntityRequest(JournalEntity journalEntryEntity){
-        this.title=journalEntryEntity.getTitle();
+        this.title=journalEntryEntity.getWriter();
         this.content=journalEntryEntity.getContent();
         this.writer=journalEntryEntity.getWriter();
         this.date=journalEntryEntity.getDate();

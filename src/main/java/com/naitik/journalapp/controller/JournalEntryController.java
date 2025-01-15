@@ -56,12 +56,13 @@ public class JournalEntryController {
   }
 
 
-    @GetMapping("/search")
+    @GetMapping("/titleAndContent")
     public List<JournalEntityRequest> getJournalByTitleAndContent(
             @RequestParam String title,
             @RequestParam String content) {
         return journalEntryService.getEntriesByTitleAndContent(title, content);
     }
+
  @GetMapping("/search")
   public List<JournalEntityRequest> searchEntries(@RequestParam(required = false) String title,
                                            @RequestParam(required = false) String content) {
