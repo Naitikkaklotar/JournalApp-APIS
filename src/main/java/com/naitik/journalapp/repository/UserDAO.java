@@ -1,16 +1,16 @@
 package com.naitik.journalapp.repository;
 
 import com.naitik.journalapp.entity.RedisUser;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
+@RequiredArgsConstructor
 public class UserDAO {
 
-    @Autowired
     private RedisTemplate<String, RedisUser> redisTemplate;
 
     private static final String KEY = "USER123";
