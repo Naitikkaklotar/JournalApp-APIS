@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 @NoArgsConstructor
-@RequiredArgsConstructor
+
 public class UserController {
 
     private UserDAO userDAO;
