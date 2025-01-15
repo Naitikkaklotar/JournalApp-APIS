@@ -2,21 +2,23 @@ package com.naitik.journalapp.controller;
 
 import com.naitik.journalapp.entity.RedisUser;
 import com.naitik.journalapp.repository.UserDAO;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@NoArgsConstructor
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
     private UserDAO userDAO;
 
     @PostMapping
-    public RedisUser saveUser(@RequestBody RedisUser user) {
-        return userDAO.save(user);
+    public RedisUser saveUser(@RequestBody RedisUser redisUser) {
+        return userDAO.save(redisUser);
     }
 
     @GetMapping("/{id}")

@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
 public class GlobalHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleNoSuchException(NoSuchElementException elementException){
-        return new ResponseEntity<>("no value is present in db" +elementException.getMessage(),HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("no value is present in db : " +elementException.getMessage(),HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -31,7 +31,7 @@ public class GlobalHandler {
     }
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<String> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        String errorMessage = "Invalid type for parameter: " + ex.getName() + ". Expected type: " + ex.getRequiredType().getName();
+        String errorMessage = "Invalid type for parameter: " + ex.getName();
         return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
 

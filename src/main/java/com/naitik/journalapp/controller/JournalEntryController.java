@@ -1,14 +1,13 @@
 package com.naitik.journalapp.controller;
 
 import com.naitik.journalapp.entity.JournalEntityRequest;
-import com.naitik.journalapp.entity.JournalEntryEntity;
 import com.naitik.journalapp.service.JournalEntryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDateTime;
+
 import java.util.List;
 
 @RestController
@@ -16,9 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JournalEntryController {
 
-//    journalEntryController(JournalEntryService journalEntryService){
-//        this.journalEntryService = journalEntryService;
-//    }
     private final JournalEntryService journalEntryService;
 
     @GetMapping
@@ -66,9 +62,9 @@ public class JournalEntryController {
             @RequestParam String content) {
         return journalEntryService.getEntriesByTitleAndContent(title, content);
     }
- /* @GetMapping("/search")
-  public List<JournalEntryEntity> searchEntries(@RequestParam(required = false) String title,
-                                                @RequestParam(required = false) String content) {
+ @GetMapping("/search")
+  public List<JournalEntityRequest> searchEntries(@RequestParam(required = false) String title,
+                                           @RequestParam(required = false) String content) {
 
       if (title != null && content != null) {
           return journalEntryService.getEntriesByTitleAndContent(title, content);
@@ -79,11 +75,8 @@ public class JournalEntryController {
       } else {
           return journalEntryService.getAll();
       }
-  }*/
+  }
 
-    //Naitik kaklotar
-    //2222222222222222222222
-    //3333333333333
 }
 
 

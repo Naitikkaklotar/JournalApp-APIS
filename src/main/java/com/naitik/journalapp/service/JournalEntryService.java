@@ -1,11 +1,14 @@
 package com.naitik.journalapp.service;
 
 import com.naitik.journalapp.entity.JournalEntityRequest;
-import com.naitik.journalapp.entity.JournalEntryEntity;
+import com.naitik.journalapp.entity.JournalEntity;
+import com.naitik.journalapp.exception.CustomDatabaseException;
+import com.naitik.journalapp.exception.CustomNotFoundException;
 import com.naitik.journalapp.repository.JournalEntryRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,47 +20,58 @@ import java.util.*;
 @RequiredArgsConstructor
 @Transactional
 public class JournalEntryService {
-    //dont need to write these if we use @sl4j
-  // private static final Logger logger = LoggerFactory.getLogger(JournalEntryService.class);
 
     private final JournalEntryRepo journalEntryRepo;
 
     public JournalEntityRequest saveEntry(JournalEntityRequest journalEntryRequest) {
+        if (journalEntryRequest == null) {
+            log.warn("Attempt to save null journal entry.");
+            throw new IllegalArgumentException("Journal entry cannot be null.");
+        }
         try {
             journalEntryRequest.setDate(LocalDateTime.now());
             log.info("Saving journal entry: {}", journalEntryRequest);
-            JournalEntryEntity journalEntryEntity = new JournalEntryEntity(journalEntryRequest);
+
+            JournalEntity journalEntryEntity = new JournalEntity(journalEntryRequest);
             journalEntryEntity = journalEntryRepo.save(journalEntryEntity);
-            JournalEntityRequest journalEntryRequestSaved = new JournalEntityRequest(journalEntryEntity);
-            log.info("Journal entry saved successfully.");
-            return journalEntryRequestSaved;
-        } catch (Exception e) {
-            log.error("Error saving journal entry: {}", e.getMessage(), e);
-            throw new RuntimeException("Error saving journal entry: " + e.getMessage(), e);
+
+            log.info("Journal entry saved successfully with ID: {}", journalEntryEntity.getId());
+            return new JournalEntityRequest(journalEntryEntity);
+        } catch (DataAccessException e) {
+            log.error("Database error while saving journal entry: {}", e.getMessage(), e);
+            throw new CustomDatabaseException("Error saving journal entry.", e);
         }
     }
+
 
 
     public List<JournalEntityRequest> getAll() {
         try {
             log.info("Fetching all journal entries.");
-            List<JournalEntryEntity> entries = journalEntryRepo.findAll();
+
+            // Fetching all journal entries from the database
+            List<JournalEntity> entries = journalEntryRepo.findAll();
+
+            // Manually converting each JournalEntity to JournalEntityRequest
             List<JournalEntityRequest> requests = new ArrayList<>();
-            for (JournalEntryEntity entity : entries) {
+            for (JournalEntity entity : entries) {
                 requests.add(new JournalEntityRequest(entity));
             }
+
             log.info("Fetched {} journal entries.", entries.size());
             return requests;
-        } catch (Exception e) {
-            log.error("Error fetching all journal entries: {}", e.getMessage(), e);
-            throw new RuntimeException("Error fetching all journal entries: " + e.getMessage(), e);
+        } catch (DataAccessException e) {
+            log.error("Database error while fetching all journal entries: {}", e.getMessage(), e);
+            // Throw a custom exception if there's a database issue
+            throw new CustomDatabaseException("Error fetching all journal entries from the database.", e);
         }
     }
+
 
     public Optional<JournalEntityRequest> findById(ObjectId id) {
         try {
             log.info("Finding journal entry by ID: {}", id);
-            Optional<JournalEntryEntity> journalEntry = journalEntryRepo.findById(id);
+            Optional<JournalEntity> journalEntry = journalEntryRepo.findById(id);
 
             if (journalEntry.isPresent()) {
                 log.info("Journal entry found: {}", journalEntry.get());
@@ -65,33 +79,38 @@ public class JournalEntryService {
                 return Optional.of(request);
             } else {
                 log.warn("Journal entry not found with ID: {}", id);
-                return Optional.empty();
+                throw new CustomDatabaseException("Id not in database" +id);
             }
         } catch (Exception e) {
             log.error("Error finding journal entry by ID: {}", e.getMessage(), e);
-            throw new RuntimeException("Error finding journal entry by ID: " + e.getMessage(), e);
+            throw new CustomDatabaseException("Error finding journal entry by ID: " + e.getMessage(), e);
         }
     }
 
 
 
-    public JournalEntityRequest deleteById(ObjectId id) {
+    public void deleteById(ObjectId id) {
         try {
-            log.info("Deleting journal entry with ID: {}", id);
-            journalEntryRepo.deleteById(id);
-            log.info("Journal entry deleted successfully.");
+            Optional<JournalEntity> existingEntry = journalEntryRepo.findById(id);
+            if (existingEntry.isPresent()) {
+                // Proceed with deletion
+                journalEntryRepo.deleteById(id);
+                log.info("Journal entry with ID: {} deleted successfully.", id);
+            } else {
+                log.warn("Journal entry not found with  ID: {}", id);
+                throw new CustomNotFoundException("Journal entry with ID: " + id + " not found in the database.");
+            }
         } catch (Exception e) {
             log.error("Error deleting journal entry by ID: {}", e.getMessage(), e);
-            throw new RuntimeException("Error deleting journal entry by ID: " + e.getMessage(), e);
+            throw new CustomDatabaseException("Error deleting journal entry by ID: " + e.getMessage(), e);
         }
-        return null;
     }
 
     public List<JournalEntityRequest> getEntriesByTitle(String title) {
         log.info("Fetching journal entries by title: {}", title);
 
         // Fetch entries from the database
-        List<JournalEntryEntity> entries = journalEntryRepo.findByTitle(title);
+        List<JournalEntity> entries = journalEntryRepo.findByTitle(title);
 
         // If no entries found, log it as an info message and return an empty list
         if (entries.isEmpty()) {
@@ -101,11 +120,10 @@ public class JournalEntryService {
 
         // Convert JournalEntryEntity to JournalEntityRequest
         List<JournalEntityRequest> requests = new ArrayList<>();
-        for (JournalEntryEntity entity : entries) {
+        for (JournalEntity entity : entries) {
             requests.add(new JournalEntityRequest(entity));
         }
 
-        /*log.info("Fetched {} journal entries with title: {}", entries.size(), title);*/
         return requests;
     }
 
@@ -113,30 +131,34 @@ public class JournalEntryService {
     public List<JournalEntityRequest> getEntriesByTitleAndContent(String title, String content) {
         try {
             log.info("Fetching journal entries by title: {} and content: {}", title, content);
-            List<JournalEntryEntity> entries = journalEntryRepo.findByTitleAndContent(title, content);
+            List<JournalEntity> entries = journalEntryRepo.findByTitleAndContent(title, content);
             List<JournalEntityRequest> requests = new ArrayList<>();
-            for (JournalEntryEntity entity : entries) {
+            for (JournalEntity entity : entries) {
                 requests.add(new JournalEntityRequest(entity));
             }
             log.info("Fetched {} journal entries with title: {} and content: {}", entries.size(), title, content);
             return requests;
         } catch (Exception e) {
             log.error("Error fetching journal entries by title and content: {}", e.getMessage(), e);
-            throw new RuntimeException("Error fetching journal entries by title and content: " + e.getMessage(), e);
+            throw new CustomDatabaseException("Error fetching journal entries by title and content: " + e.getMessage(), e);
         }
     }
 
-    public List<JournalEntryEntity> getEntriesByContent(String content) {
-        /*try {
-            logger.info("Fetching journal entries by content: {}", content);
-            List<JournalEntry> entries = journalEntryRepo.findByContent(content);
-            logger.info("Fetched {} journal entries by content.", entries.size());
-            return entries;
+    public List<JournalEntityRequest> getEntriesByContent(String content) {
+        try {
+            log.info("Fetching journal entries by content: {}", content);
+            List<JournalEntity> entries = journalEntryRepo.findByContent(content);
+            List<JournalEntityRequest> requests = new ArrayList<>();
+            for (JournalEntity entity : entries) {
+                requests.add(new JournalEntityRequest(entity));
+            }
+            log.info("Fetched {} journal entries by content.", entries.size());
+            return requests;
         } catch (Exception e) {
-            logger.error("Error fetching journal entries by content: {}", e.getMessage(), e);
-            throw new RuntimeException("Error fetching journal entries by content: " + e.getMessage(), e);
-        }*/
-        return journalEntryRepo.findByContent(content);
+            log.error("Error fetching journal entries by content: {}", e.getMessage(), e);
+            throw new CustomDatabaseException("Error fetching journal entries by content: " + e.getMessage(), e);
+        }
+
     }
 
 }
