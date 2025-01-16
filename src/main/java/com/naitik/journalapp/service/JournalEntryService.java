@@ -26,7 +26,7 @@ public class JournalEntryService {
     public JournalEntityRequest saveEntry(JournalEntityRequest journalEntryRequest) {
         if (journalEntryRequest == null) {
             log.warn("Attempt to save null journal entry.");
-            throw new IllegalArgumentException("Journal entry cannot be null.");
+            throw new CustomDatabaseException("Journal entry cannot be null.");
         }
         try {
             journalEntryRequest.setDate(LocalDateTime.now());

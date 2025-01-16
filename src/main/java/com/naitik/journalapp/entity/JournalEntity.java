@@ -19,6 +19,7 @@ public class JournalEntity {
     private String content;
     private String writer;
 
+
     private LocalDateTime date;
 
       public JournalEntity(JournalEntityRequest journalEntityRequest){
