@@ -23,20 +23,19 @@ public class JournalEntryService {
 
     private final JournalEntryRepo journalEntryRepo;
 
-    public JournalEntityRequest saveEntry(JournalEntityRequest journalEntryRequest) {
-        if (journalEntryRequest == null) {
+    public JournalEntityRequest saveEntry(JournalEntityRequest journalEntityRequest) {
+        if (journalEntityRequest == null) {
             log.warn("Attempt to save null journal entry.");
             throw new CustomDatabaseException("Journal entry cannot be null.");
         }
         try {
-            journalEntryRequest.setDate(LocalDateTime.now());
-            log.info("Saving journal entry: {}", journalEntryRequest);
+            journalEntityRequest.setDate(LocalDateTime.now());
+            log.info("Saving journal entry: {}", journalEntityRequest);
+            JournalEntity journalEntity = new JournalEntity(journalEntityRequest);
+            journalEntity = journalEntryRepo.save(journalEntity);
 
-            JournalEntity journalEntryEntity = new JournalEntity(journalEntryRequest);
-            journalEntryEntity = journalEntryRepo.save(journalEntryEntity);
-
-            log.info("Journal entry saved successfully with ID: {}", journalEntryEntity.getId());
-            return new JournalEntityRequest(journalEntryEntity);
+            log.info("Journal entry saved successfully with ID: {}", journalEntity.getId());
+            return new JournalEntityRequest(journalEntity);
         } catch (DataAccessException e) {
             log.error("Database error while saving journal entry: {}", e.getMessage(), e);
             throw new CustomDatabaseException("Error saving journal entry.", e);
