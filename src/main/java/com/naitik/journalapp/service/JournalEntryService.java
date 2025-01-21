@@ -158,6 +158,7 @@ public class JournalEntryService {
             throw new CustomDatabaseException("Error fetching journal entries by content: " + e.getMessage(), e);
         }
 
+
     }
 
 }
